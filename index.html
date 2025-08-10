@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Termo de Entregas e Recebimentos de Materiais</title>
+  <style>
+    :root{
+      --blue:#2f7fb3;
+      --light:#eef6fb;
+      --accent:#1d6fa5;
+      --border:#c6d7e6;
+      --paper:#fff;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    body{
+      margin:0;
+      padding:20px;
+      background:linear-gradient(180deg,#f5f8fb, #ffffff);
+      color:#222;
+    }
+    .container{
+      max-width:1000px;
+      margin:0 auto;
+      background:var(--paper);
+      box-shadow:0 6px 18px rgba(0,0,0,0.06);
+      border-radius:8px;
+      padding:18px;
+    }
+    header{
+      display:flex;
+      gap:80px;
+      align-items:center;
+      margin-bottom:6px;
+      justify-content: space-between; /* separa título e logo nas extremidades */
+    }
+    .logo{
+      width:90px;
+      /* removido height:0 para logo aparecer */
+      background:var(--light);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:1px;
+      border:1px solid var(--border);
+      font-weight:bold;
+      color:var(--accent);
+    }
+    h1{
+      font-size:18px;
+      margin:0;
+      letter-spacing:0.6px;
+    }
+    p.sub{
+      margin:2px 0 12px 0;
+      font-size:13px;
+      color:#444;
+    }
+
+    .form-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .form-group{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:140px;
+      flex:1;
+    }
+    label{ font-size:13px; color:#333; }
+    input[type="text"], input[type="number"], input[type="date"]{
+      padding:8px 10px;
+      border-radius:6px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:14px;
+    }
+    input[type="number"]{ text-align:right; }
+
+    .actions{
+      display:flex;
+      gap:8px;
+      align-items:flex-end;
+    }
+    button{
+      cursor:pointer;
+      padding:9px 12px;
+      border-radius:6px;
+      border:0;
+      background:var(--accent);
+      color:#fff;
+      font-weight:600;
+    }
+    button.secondary{
+      background:#6aa5d4;
+    }
+    button.ghost{
+      background:transparent;
+      border:1px solid var(--border);
+      color:#333;
+      font-weight:600;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:8px;
+      font-size:14px;
+    }
+    thead th{
+      background:var(--blue);
+      color:#fff;
+      padding:8px;
+      font-size:13px;
+      text-align:left;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+    tbody td{
+      padding:8px;
+      border:1px solid var(--border);
+      vertical-align:middle;
+      background:#fff;
+    }
+    td.center{text-align:center;}
+    td.right{text-align:right;}
+
+    tfoot td{
+      padding:10px 8px;
+      border-top:2px solid var(--border);
+      font-weight:700;
+      background:var(--light);
+    }
+
+    .small{
+      font-size:12px;
+      color:#555;
+    }
+
+    .row-actions button{
+      padding:6px 8px;
+      font-size:12px;
+      margin-right:6px;
+    }
+
+    @media (max-width:860px){
+      .form-group{ min-width:unset; flex-basis:48%; }
+      header{
+        flex-direction: column;
+        align-items: center; /* centraliza na coluna */
+        gap: 8px;
+        justify-content: center;
+      }
+      .logo {
+        width: auto;
+        border: none;
+        background: transparent;
+      }
+      .logo img {
+        height: 35px;
+        width: auto;
+      }
+    }
+
+    /* print styles */
+    @media print{
+      body{ background: #fff; }
+      .container{ box-shadow:none; border-radius:0; padding:0; }
+      .no-print{ display:none !important; }
+      thead th{ background:#ddd !important; color:#000 !important; -webkit-print-color-adjust:exact; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>TERMO DE ENTREGAS E RECEBIMENTOS DE MATERIAIS</h1>
+        <p class="sub">Preencha os campos abaixo para registrar entradas e saídas de materiais.</p>
+      </div>
+      <div class="logo">
+        <img src="logo.png" alt="Logo" style="height:40px; width:auto;" />
+      </div>
+    </header>
+
+    <div class="no-print">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantidade</label>
+          <input id="quant" type="number" min="1" step="1" value="1" />
+        </div>
+        <div class="form-group" style="flex:2">
+          <label>Descrição do material alugado</label>
+          <input id="desc" type="text" placeholder="Ex: Andaime, Betoneira, Estribo..." />
+        </div>
+        <div class="form-group">
+          <label>Data de entrada na obra</label>
+          <input id="dataEntrada" type="date" />
+        </div>
+        <div class="form-group">
+          <label>Data de saída da obra</label>
+          <input id="dataSaida" type="date" />
+        </div>
+        <div class="form-group">
+          <label>Diária (R$)</label>
+          <input id="diaria" type="number" min="0" step="0.01" value="0.00" />
+        </div>
+        <div class="form-group">
+          <label>Valor unitário (R$)</label>
+          <input id="valorUnit" type="number" min="0" step="0.01" value="0.00" />
+        </div>
+        <div class="actions" style="align-items:center">
+          <button id="addBtn">Adicionar</button>
+          <button id="clearBtn" class="secondary">Limpar</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <button id="printBtn" class="ghost">Imprimir / Salvar PDF</button>
+        <button id="exportBtn" class="ghost">Exportar CSV</button>
+      </div>
+    </div>
+
+    <table id="tb">
+      <thead>
+        <tr>
+          <th style="width:70px">QUANT.</th>
+          <th>DESCRIÇÃO DO MATERIAL ALUGADO</th>
+          <th style="width:130px">DATA DE ENTRADA</th>
+          <th style="width:130px">DATA DE SAÍDA</th>
+          <th style="width:100px">DIÁRIA (R$)</th>
+          <th style="width:120px">VALOR UNITÁRIO (R$)</th>
+          <th style="width:120px">TOTAL (R$)</th>
+          <th style="width:120px" class="no-print">AÇÕES</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <!-- linhas serão adicionadas aqui -->
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="6" class="right">TOTAL GERAL</td>
+          <td id="grandTotal" class="right">R$ 0,00</td>
+          <td class="no-print"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+  </div>
+
+  <script>
+    // util: formatar número em reais
+    function formatBRL(num){
+      return 'R$ ' + Number(num || 0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+
+    // util: parse seguro
+    function toNumber(val){
+      const n = Number(String(val).replace(',', '.'));
+      return isNaN(n) ? 0 : n;
+    }
+
+    const tbody = document.getElementById('tbody');
+    const grandTotalEl = document.getElementById('grandTotal');
+
+    function calculoTotalLinha(qtd, valorUnit){
+      // calcula total unitário por quantidade * valorUnit
+      // ambas são números
+      return Number(qtd) * Number(valorUnit);
+    }
+
+    function atualizaTotalGeral(){
+      let sum = 0;
+      tbody.querySelectorAll('tr').forEach(row=>{
+        const totalCell = row.querySelector('.col-total');
+        const val = toNumber(totalCell.dataset.value);
+        sum += val;
+      });
+      grandTotalEl.textContent = formatBRL(sum);
+    }
+
+    function criaLinha(obj){
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td class="center">${obj.quant}</td>
+        <td>${obj.desc}</td>
+        <td class="center small">${obj.dataEntrada || ''}</td>
+        <td class="center small">${obj.dataSaida || ''}</td>
+        <td class="right small"> ${formatBRL(obj.diaria)}</td>
+        <td class="right small"> ${formatBRL(obj.valorUnit)}</td>
+        <td class="right col-total" data-value="${obj.total}">${formatBRL(obj.total)}</td>
+        <td class="row-actions no-print" style="text-align:center">
+          <button class="ghost btn-edit">Editar</button>
+          <button class="ghost btn-delete">Excluir</button>
+        </td>
+      `;
+
+      // eventos editar/excluir
+      tr.querySelector('.btn-delete').addEventListener('click', ()=>{
+        if(confirm('Deseja remover esta linha?')){
+          tr.remove();
+          atualizaTotalGeral();
+        }
+      });
+
+      tr.querySelector('.btn-edit').addEventListener('click', ()=>{
+        // preencher o formulário com os valores para editar
+        document.getElementById('quant').value = obj.quant;
+        document.getElementById('desc').value = obj.desc;
+        document.getElementById('dataEntrada').value = obj.dataEntrada;
+        document.getElementById('dataSaida').value = obj.dataSaida;
+        document.getElementById('diaria').value = Number(obj.diaria).toFixed(2);
+        document.getElementById('valorUnit').value = Number(obj.valorUnit).toFixed(2);
+
+        // remover a linha editada (será re-adicionada ao salvar)
+        tr.remove();
+        atualizaTotalGeral();
+      });
+
+      tbody.appendChild(tr);
+      atualizaTotalGeral();
+    }
+
+    // adicionar linha a partir do formulário
+    document.getElementById('addBtn').addEventListener('click', ()=>{
+      const quant = Math.max(1, Math.floor(toNumber(document.getElementById('quant').value) || 0));
+      const desc = document.getElementById('desc').value.trim();
+      const dataEntrada = document.getElementById('dataEntrada').value;
+      const dataSaida = document.getElementById('dataSaida').value;
+      const diaria = toNumber(document.getElementById('diaria').value);
+      const valorUnit = toNumber(document.getElementById('valorUnit').value);
+
+      if(!desc){
+        alert('Por favor, preencha a descrição do material.');
+        return;
+      }
+
+      const total = calculoTotalLinha(diaria, valorUnit);
+
+      const obj = {
+        quant, desc, dataEntrada, dataSaida, diaria: Number(diaria.toFixed(2)), valorUnit: Number(valorUnit.toFixed(2)), total: Number(total.toFixed(2))
+      };
+
+      criaLinha(obj);
+
+      // limpar formulário parcialmente
+      document.getElementById('desc').value = '';
+      document.getElementById('valorUnit').value = '0.00';
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', ()=>{
+      document.getElementById('quant').value = 1;
+      document.getElementById('desc').value = '';
+      document.getElementById('dataEntrada').value = '';
+      document.getElementById('dataSaida').value = '';
+      document.getElementById('diaria').value = '0.00';
+      document.getElementById('valorUnit').value = '0.00';
+    });
+
+    // imprimir / salvar PDF
+    document.getElementById('printBtn').addEventListener('click', ()=>{
+      window.print();
+    });
+
+    // exportar csv
+    document.getElementById('exportBtn').addEventListener('click', ()=>{
+      const rows = [];
+      const header = ['QUANT','DESCRIÇÃO','DATA_ENTRADA','DATA_SAÍDA','DIÁRIA','VALOR_UNITÁRIO','TOTAL'];
+      rows.push(header.join(';'));
+
+      tbody.querySelectorAll('tr').forEach(tr=>{
+        const cols = tr.querySelectorAll('td');
+        const r = [
+          cols[0].textContent.trim(),
+          ('"'+cols[1].textContent.trim().replace(/"/g,'""')+'"'),
+          cols[2].textContent.trim(),
+          cols[3].textContent.trim(),
+          cols[4].textContent.replace('R$','').trim().replace('.','').replace(',','.'),
+          cols[5].textContent.replace('R$','').trim().replace('.','').replace(',','.'),
+          cols[6].textContent.replace('R$','').trim().replace('.','').replace(',','.')
+        ];
+        rows.push(r.join(';'));
+      });
+
+      const csv = rows.join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'termo_entregas_materiais.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // exemplo inicial (opcional) - comentário se não quiser linhas iniciais
+    // criaLinha({quant: 2, desc: 'Andaime tubular', dataEntrada:'2025-08-01', dataSaida:'2025-08-05', diaria: 0.00, valorUnit: 150.00, total: 300.00});
+  </script>
+</body>
+</html>
