@@ -6,7 +6,7 @@
   <title>Termo de Entregas e Recebimentos de Materiais</title>
   <style>
     :root{
-      --blue:#2f7fb3;
+      --blue:#2fb1b3;
       --light:#eef6fb;
       --accent:#1d6fa5;
       --border:#c6d7e6;
@@ -35,7 +35,6 @@
       justify-content: space-between; /* separa título e logo nas extremidades */
     }
     
-    
     h1{
       font-size:18px;
       margin:0;
@@ -45,6 +44,22 @@
       margin:2px 0 12px 0;
       font-size:13px;
       color:#444;
+    }
+
+    .client-info {
+      background: var(--light);
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .client-info .form-group {
+      flex: 1 1 300px;
+      display:flex;
+      flex-direction: column;
+      gap:6px;
     }
 
     .form-row{
@@ -135,6 +150,18 @@
       margin-right:6px;
     }
 
+    /* NOVO: área para imprimir nome e endereço */
+    .print-client-info {
+      display: none;
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .print-client-info span {
+      margin-right: 30px;
+    }
+
     @media (max-width:860px){
       .form-group{ min-width:unset; flex-basis:48%; }
       header{
@@ -160,6 +187,10 @@
       .container{ box-shadow:none; border-radius:0; padding:0; }
       .no-print{ display:none !important; }
       thead th{ background:#ddd !important; color:#000 !important; -webkit-print-color-adjust:exact; }
+      /* Mostrar nome e endereço no topo da impressão */
+      .print-client-info {
+        display: block;
+      }
     }
   </style>
 </head>
@@ -171,9 +202,24 @@
         <p class="sub">Preencha os campos abaixo para registrar entradas e saídas de materiais.</p>
       </div>
       <div class="logo">
-        
+        <!-- Se quiser colocar logo aqui -->
       </div>
     </header>
+
+    <!-- Formulário com inputs nome e endereço -->
+    <div class="client-info no-print">
+      <div class="form-group">
+        <label>Nome do Cliente</label>
+        <input id="cliente" type="text" placeholder="Nome do cliente" />
+      </div>
+      <div class="form-group">
+        <label>Endereço</label>
+        <input id="endereco" type="text" placeholder="Endereço completo" />
+      </div>
+    </div>
+
+    <!-- Esta div será exibida apenas na impressão com nome e endereço -->
+    <div class="print-client-info"></div>
 
     <div class="no-print">
       <div class="form-row">
@@ -194,8 +240,8 @@
           <input id="dataSaida" type="date" />
         </div>
         <div class="form-group">
-          <label>Diária (R$)</label>
-          <input id="diaria" type="number" min="0" step="0.01" value="0.00" />
+          <label>Diária (dias)</label>
+          <input id="diaria" type="number" min="0" step="1" value="0" readonly />
         </div>
         <div class="form-group">
           <label>Valor unitário (R$)</label>
@@ -220,7 +266,7 @@
           <th>DESCRIÇÃO DO MATERIAL ALUGADO</th>
           <th style="width:130px">DATA DE ENTRADA</th>
           <th style="width:130px">DATA DE SAÍDA</th>
-          <th style="width:100px">DIÁRIA (R$)</th>
+          <th style="width:100px">DIÁRIA</th>
           <th style="width:120px">VALOR UNITÁRIO (R$)</th>
           <th style="width:120px">TOTAL (R$)</th>
           <th style="width:120px" class="no-print">AÇÕES</th>
@@ -254,12 +300,25 @@
 
     const tbody = document.getElementById('tbody');
     const grandTotalEl = document.getElementById('grandTotal');
+    const printClientInfoEl = document.querySelector('.print-client-info');
 
-    function calculoTotalLinha(qtd, valorUnit){
-      // calcula total unitário por quantidade * valorUnit
-      // ambas são números
-      return Number(qtd) * Number(valorUnit);
+    // Atualiza campo diária com a quantidade de dias entre entrada e saída
+    function atualizaDiaria() {
+      const dataEntrada = document.getElementById('dataEntrada').value;
+      const dataSaida = document.getElementById('dataSaida').value;
+      if(dataEntrada && dataSaida){
+        const dtEntrada = new Date(dataEntrada);
+        const dtSaida = new Date(dataSaida);
+        const diffTime = dtSaida - dtEntrada;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // inclui o dia de entrada
+        document.getElementById('diaria').value = diffDays > 0 ? diffDays : 0;
+      } else {
+        document.getElementById('diaria').value = 0;
+      }
     }
+
+    document.getElementById('dataEntrada').addEventListener('change', atualizaDiaria);
+    document.getElementById('dataSaida').addEventListener('change', atualizaDiaria);
 
     function atualizaTotalGeral(){
       let sum = 0;
@@ -279,8 +338,8 @@
         <td>${obj.desc}</td>
         <td class="center small">${obj.dataEntrada || ''}</td>
         <td class="center small">${obj.dataSaida || ''}</td>
-        <td class="right small"> ${formatBRL(obj.diaria)}</td>
-        <td class="right small"> ${formatBRL(obj.valorUnit)}</td>
+        <td class="right small">${formatBRL(obj.diaria)}</td>
+        <td class="right small">${formatBRL(obj.valorUnit)}</td>
         <td class="right col-total" data-value="${obj.total}">${formatBRL(obj.total)}</td>
         <td class="row-actions no-print" style="text-align:center">
           <button class="ghost btn-edit">Editar</button>
@@ -302,10 +361,9 @@
         document.getElementById('desc').value = obj.desc;
         document.getElementById('dataEntrada').value = obj.dataEntrada;
         document.getElementById('dataSaida').value = obj.dataSaida;
-        document.getElementById('diaria').value = Number(obj.diaria).toFixed(2);
+        document.getElementById('diaria').value = Number(obj.diaria);
         document.getElementById('valorUnit').value = Number(obj.valorUnit).toFixed(2);
 
-        // remover a linha editada (será re-adicionada ao salvar)
         tr.remove();
         atualizaTotalGeral();
       });
@@ -314,8 +372,9 @@
       atualizaTotalGeral();
     }
 
-    // adicionar linha a partir do formulário
     document.getElementById('addBtn').addEventListener('click', ()=>{
+      const cliente = document.getElementById('cliente').value.trim();
+      const endereco = document.getElementById('endereco').value.trim();
       const quant = Math.max(1, Math.floor(toNumber(document.getElementById('quant').value) || 0));
       const desc = document.getElementById('desc').value.trim();
       const dataEntrada = document.getElementById('dataEntrada').value;
@@ -323,21 +382,46 @@
       const diaria = toNumber(document.getElementById('diaria').value);
       const valorUnit = toNumber(document.getElementById('valorUnit').value);
 
+      if(!cliente){
+        alert('Por favor, preencha o nome do cliente.');
+        return;
+      }
+      if(!endereco){
+        alert('Por favor, preencha o endereço.');
+        return;
+      }
       if(!desc){
         alert('Por favor, preencha a descrição do material.');
         return;
       }
+      if(diaria <= 0){
+        alert('Por favor, informe uma data de saída maior ou igual à data de entrada.');
+        return;
+      }
 
-      const total = calculoTotalLinha(diaria, valorUnit);
+      // total = diária * valor unitário
+      const total = diaria * valorUnit;
 
       const obj = {
-        quant, desc, dataEntrada, dataSaida, diaria: Number(diaria.toFixed(2)), valorUnit: Number(valorUnit.toFixed(2)), total: Number(total.toFixed(2))
+        cliente,
+        endereco,
+        quant,
+        desc,
+        dataEntrada,
+        dataSaida,
+        diaria,
+        valorUnit,
+        total
       };
 
       criaLinha(obj);
 
-      // limpar formulário parcialmente
+      // Limpar formulário (exceto nome e endereço)
+      document.getElementById('quant').value = 1;
       document.getElementById('desc').value = '';
+      document.getElementById('dataEntrada').value = '';
+      document.getElementById('dataSaida').value = '';
+      document.getElementById('diaria').value = 0;
       document.getElementById('valorUnit').value = '0.00';
     });
 
@@ -346,18 +430,24 @@
       document.getElementById('desc').value = '';
       document.getElementById('dataEntrada').value = '';
       document.getElementById('dataSaida').value = '';
-      document.getElementById('diaria').value = '0.00';
+      document.getElementById('diaria').value = 0;
       document.getElementById('valorUnit').value = '0.00';
     });
 
-    // imprimir / salvar PDF
     document.getElementById('printBtn').addEventListener('click', ()=>{
+      // Atualiza a div de impressão com os valores atuais
+      const cliente = document.getElementById('cliente').value.trim();
+      const endereco = document.getElementById('endereco').value.trim();
+      printClientInfoEl.innerHTML = `
+        <span><strong>Nome:</strong> ${cliente || '__________'}</span>
+        <span><strong>Endereço:</strong> ${endereco || '__________'}</span>
+      `;
       window.print();
     });
 
-    // exportar csv
     document.getElementById('exportBtn').addEventListener('click', ()=>{
       const rows = [];
+      // Cabeçalho: sem cliente e endereço
       const header = ['QUANT','DESCRIÇÃO','DATA_ENTRADA','DATA_SAÍDA','DIÁRIA','VALOR_UNITÁRIO','TOTAL'];
       rows.push(header.join(';'));
 
@@ -365,7 +455,7 @@
         const cols = tr.querySelectorAll('td');
         const r = [
           cols[0].textContent.trim(),
-          ('"'+cols[1].textContent.trim().replace(/"/g,'""')+'"'),
+          '"'+cols[1].textContent.trim().replace(/"/g,'""')+'"',
           cols[2].textContent.trim(),
           cols[3].textContent.trim(),
           cols[4].textContent.replace('R$','').trim().replace('.','').replace(',','.'),
@@ -384,9 +474,6 @@
       a.click();
       URL.revokeObjectURL(url);
     });
-
-    // exemplo inicial (opcional) - comentário se não quiser linhas iniciais
-    // criaLinha({quant: 2, desc: 'Andaime tubular', dataEntrada:'2025-08-01', dataSaida:'2025-08-05', diaria: 0.00, valorUnit: 150.00, total: 300.00});
   </script>
 </body>
 </html>
